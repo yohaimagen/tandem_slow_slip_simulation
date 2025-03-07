@@ -61,7 +61,8 @@ RUN    cd tandem && \
 RUN rm -rf /home/tandem/tandem
 
 # Set the default working directory to tandem's home
-
+RUN mkdir /home/tandem/storage
+RUN chown -R tandem:tandem /home/tandem/storage
 COPY --chown=tandem:tandem simulation_configs/ /home/tandem/casc
 # Change ownership of home directory
 RUN chown -R tandem:tandem /home/tandem
