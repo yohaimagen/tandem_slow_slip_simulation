@@ -1,0 +1,31 @@
+
+               ___          ___         _____         ___          ___
+      ___     /  /\        /__/\       /  /::\       /  /\        /__/\
+     /  /\   /  /::\       \  \:\     /  /:/\:\     /  /:/_      |  |::\
+    /  /:/  /  /:/\:\       \  \:\   /  /:/  \:\   /  /:/ /\     |  |:|:\
+   /  /:/  /  /:/~/::\  _____\__\:\ /__/:/ \__\:| /  /:/ /:/_  __|__|:|\:\
+  /  /::\ /__/:/ /:/\:\/__/::::::::\\  \:\ /  /://__/:/ /:/ /\/__/::::| \:\
+ /__/:/\:\\  \:\/:/__\/\  \:\~~\~~\/ \  \:\  /:/ \  \:\/:/ /:/\  \:\~~\__\/
+ \__\/  \:\\  \::/      \  \:\  ~~~   \  \:\/:/   \  \::/ /:/  \  \:\
+      \  \:\\  \:\       \  \:\        \  \::/     \  \:\/:/    \  \:\
+       \__\/ \  \:\       \  \:\        \__\/       \  \::/      \  \:\
+              \__\/        \__\/                     \__\/        \__\/
+
+                     tandem version v1.0-152-gf8be604
+                            domain dimension 2
+                            polynomial degree 6
+                    minimum order of quadrature rule 13
+
+                         stack size limit = 8 MiB
+          WARNING: Your stack size limit is quite small, increase
+           it with 'ulimit -Ss 65536' or 'ulimit -Ss unlimited'.
+
+                              Worker affinity
+                               0123456789|01
+                          Worker affinity on node
+                               0123456789|01
+
+
+create_discrete_greens_function()
+Green's function operator size: 10472 x 5236
+Computing Green's function 0 / 5236
