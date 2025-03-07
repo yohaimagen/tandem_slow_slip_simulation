@@ -3,9 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: yohai-magen-sse-pvc
 spec:
-  storageClassName: rook-ceph-block  # Replace with the appropriate storage class
+  storageClassName: rook-ceph-block  
   accessModes:
-    - ReadWriteMany  # Allows multiple nodes to access the volume
+    - ReadWriteOnce #ReadWriteMany  
   resources:
     requests:
-      storage: 100Gi  # 100 GB of storage
+      storage: 100Gi  
+

@@ -25,7 +25,9 @@ spec:
       - name: tandem-pod
         image: yohaimagen1/tandem_v1.2:latest
         imagePullPolicy: Always
-
+        volumeMounts:
+          - mountPath: /home/tandem/storage
+            name: yohai-magen-sse-pvc
         resources:
           limits:
             memory: 80Gi
@@ -41,3 +43,7 @@ spec:
           value: "true"
         - name: OMP_PLACES
           value: "cores"
+      volumes:
+      - name: yohai-magen-sse-pvc
+        persistentVolumeClaim:
+          claimName: yohai-magen-sse-pvc
