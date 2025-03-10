@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tandem-batch-job
+spec:
+  backoffLimit: 3
+  completionMode: Indexed
+  completions: 9
+  parallelism: 9
+  template:
+    metadata:
+      labels:
+        app: tandem-job
+    spec:
+      containers:
+      - command:
+        - bash
+        - -c
+        - |
+          items=(
+          '1'
+          '2'
+          '3'
+          '4'
+          '5'
+          '6'
+          '7'
+          '8'
+          '9'
+          )
+          echo "${items[${JOB_COMPLETION_INDEX}]}" > ${JOB_COMPLETION_INDEX}.txt
+          mv ${JOB_COMPLETION_INDEX}.txt /home/tandem/storage
+          echo "Job ${JOB_COMPLETION_INDEX} completed"
+        env:
+        - name: OPENMPI_ALLOW_RUN_AS_ROOT
+          value: '1'
+        - name: OMP_PROC_BIND
+          value: 'true'
+        - name: OMP_PLACES
+          value: cores
+        - name: JOB_COMPLETION_INDEX
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+        image: yohaimagen1/tandem_v1.2:latest
+        imagePullPolicy: Always
+        name: tandem-container
+        resources:
+          limits:
+            cpu: '1'
+            memory: 10Gi
+          requests:
+            cpu: '100m'
+            memory: 10Gi
+        volumeMounts:
+        - mountPath: /home/tandem/storage
+          name: yohai-magen-sse-pvc
+      restartPolicy: Never
+      volumes:
+      - name: yohai-magen-sse-pvc
+        persistentVolumeClaim:
+          claimName: yohai-magen-sse-pvc
