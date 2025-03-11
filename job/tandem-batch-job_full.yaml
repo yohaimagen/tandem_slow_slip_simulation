@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tandem-batch-job-full
+spec:
+  backoffLimit: 6
+  completionMode: Indexed
+  completions: 65
+  parallelism: 65
+  template:
+    metadata:
+      labels:
+        app: tandem-job
+    spec:
+      containers:
+      - command:
+        - bash
+        - -c
+        - items=('62.5 1' '62.5 2' '62.5 3' '62.5 5' '62.5 6' '65 1' '65 2' '65 3'
+          '65 5' '65 6' '67.5 1' '67.5 2' '67.5 3' '67.5 5' '67.5 6' '68.125 1' '68.125
+          2' '68.125 3' '68.125 5' '68.125 6' '68.75 1' '68.75 2' '68.75 3' '68.75
+          5' '68.75 6' '69.375 1' '69.375 2' '69.375 3' '69.375 5' '69.375 6' '70
+          1' '70 2' '70 3' '70 5' '70 6' '72.5 1' '72.5 2' '72.5 3' '72.5 5' '72.5
+          6' '75 1' '75 2' '75 3' '75 5' '75 6' '77.5 1' '77.5 2' '77.5 3' '77.5 5'
+          '77.5 6' '82.5 1' '82.5 2' '82.5 3' '82.5 5' '82.5 6' '92.5 1' '92.5 2'
+          '92.5 3' '92.5 5' '92.5 6' '100 1' '100 2' '100 3' '100 5' '100 6');cd /home/tandem/storage/;python3
+          run_sim.py ${items[${JOB_COMPLETION_INDEX}]} /home/tandem/storage/ /home/tandem/storage/gf/
+          /home/tandem/casc/casc.msh /home/tandem/casc/casc.lua /home/tandem/build_2d_6p/app/tandem
+          /home/tandem/casc/solver.cfg
+        env:
+        - name: OPENMPI_ALLOW_RUN_AS_ROOT
+          value: '1'
+        - name: OMP_PROC_BIND
+          value: 'true'
+        - name: OMP_PLACES
+          value: cores
+        - name: JOB_COMPLETION_INDEX
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+        image: yohaimagen1/tandem_v1.2:latest
+        imagePullPolicy: Always
+        name: tandem-container
+        resources:
+          limits:
+            cpu: '50'
+            memory: 80Gi
+          requests:
+            cpu: '30'
+            memory: 80Gi
+        volumeMounts:
+        - mountPath: /home/tandem/storage
+          name: yohai-magen-sse-pvc
+      restartPolicy: Never
+      volumes:
+      - name: yohai-magen-sse-pvc
+        persistentVolumeClaim:
+          claimName: yohai-magen-sse-pvc

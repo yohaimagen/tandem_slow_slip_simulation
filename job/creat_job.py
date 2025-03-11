@@ -3,14 +3,12 @@ import yaml
 import argparse
 
 def create_job_object(pairs):
-    job_name = "tandem-batch-job"
+    job_name = "tandem-batch-job-rerun-2"
     k = len(pairs)
     command_script = 'items=('
     command_script += ' '.join([f'\'{pair1} {pair2}\'' for pair1, pair2 in pairs])
     command_script += ');'
-    command_script += 'cd /home/tandem/storage/;mkdir -p run_${JOB_COMPLETION_INDEX};'
-    command_script += 'cd run_${JOB_COMPLETION_INDEX};'
-    command_script += 'cp /home/tandem/storage/run_sim.py .;'
+    command_script += 'cd /home/tandem/storage/;'
     command_script += 'python3 run_sim.py ${items[${JOB_COMPLETION_INDEX}]} /home/tandem/storage/ /home/tandem/storage/gf/ /home/tandem/casc/casc.msh /home/tandem/casc/casc.lua /home/tandem/build_2d_6p/app/tandem /home/tandem/casc/solver.cfg'
     
     print(command_script)
@@ -72,13 +70,14 @@ def create_job_object(pairs):
     )
     
     # Save job YAML for debugging
-    with open("tandem-batch-job.yaml", "w") as f:
+    with open("tandem-batch-job_rerun_2.yaml", "w") as f:
         yaml.dump(client.ApiClient().sanitize_for_serialization(job), f)
     
     return job
 
 def create_job(batch_v1, namespace, list1, list2, dry_run):
-    pairs = [(pair1, pair2) for pair1 in list1 for pair2 in list2]
+    # pairs = [(pair1, pair2) for pair1 in list1 for pair2 in list2]
+    pairs = [(p1, p2) for p1, p2 in zip(list1, list2)]
     job = create_job_object(pairs)
     
     if dry_run:
@@ -94,8 +93,12 @@ def main():
     config.load_kube_config()
     batch_v1 = client.BatchV1Api()
     namespace = "default"
-    list1 = ["80", "85"]  # Example values
-    list2 = ["1", "2", "3", "5", "6"]
+    # list1 = ['62.5', '65', '67.5', '68.125', '68.75', '69.375', '70', '72.5', '75', '77.5', '82.5', '92.5', '100']  # Example values
+    # list2 = ["1", "2", "3", "5", "6"]
+    # list1 = ['82.5', '100.0', '77.5', '92.5', '72.5', '100.0', '68.125', '75.0', '65.0', '100.0', '100.0', '70.0', '69.375']
+    # list2 = ['6.0', '2.0', '5.0', '3.0', '3.0', '6.0', '2.0', '5.0', '3.0', '5.0', '3.0', '5.0', '5.0']
+    list1 = ['77.5', '72.5', '100.0', '68.125', '65.0', '70.0']
+    list2 = ['5.0', '3.0', '6.0', '2.0', '3.0', '5.0']
     create_job(batch_v1, namespace, list1, list2, args.dry_run)
 
 if __name__ == "__main__":

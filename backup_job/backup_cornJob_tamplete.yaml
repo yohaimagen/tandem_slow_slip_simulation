@@ -1,0 +1,102 @@
+---
+# Secret for AWS credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-credentials
+type: Opaque
+stringData:
+  config: |
+    [profile prp]
+    endpoint_url = http://rook-ceph-rgw-nautiluss3.rook/
+  credentials: |
+    [prp]
+    aws_access_key_id = KEY_ID
+    aws_secret_access_key = ACCESS_KEY
+---
+# ConfigMap for sync script
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-scripts
+data:
+  sync.sh: |
+    #!/bin/sh
+    echo "Starting backup job at $(date)"
+    
+    # Ensure AWS config exists
+    mkdir -p /home/appuser/.aws
+    cp /aws-secrets/config /home/appuser/.aws/config
+    cp /aws-secrets/credentials /home/appuser/.aws/credentials
+    chmod 600 /home/appuser/.aws/credentials
+    
+    # Run the sync command with AWS CLI
+    aws s3 sync /home/appuser/storage/ s3://yohai-magen-sse-buket/ --profile prp
+    
+    echo "Backup completed at $(date)"
+---
+# CronJob that runs every 12 hours
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-job
+spec:
+  schedule: "0 */12 * * *"  # Run every 12 hours
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: backup-pod
+        spec:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: feature.node.kubernetes.io/pci-10de.present
+                    operator: NotIn
+                    values:
+                    - "true"
+          containers:
+          - name: backup-pod
+            image: yohaimagen1/python-aws:3.12
+            volumeMounts:
+              - mountPath: /home/appuser/storage/
+                name: yohai-magen-sse-pvc
+              - mountPath: /aws-secrets
+                name: aws-secrets
+                readOnly: true
+              - mountPath: /scripts
+                name: backup-scripts
+                readOnly: true
+            resources:
+              limits:
+                memory: 2Gi
+                cpu: "2"
+              requests:
+                memory: 1Gi
+                cpu: "1"
+            command: ["sh", "-c", "echo 'Im a new pod' && sleep infinity"]
+            env:
+            - name: OPENMPI_ALLOW_RUN_AS_ROOT
+              value: "1"
+            - name: OMP_PROC_BIND
+              value: "true"
+            - name: OMP_PLACES
+              value: "cores"
+          restartPolicy: OnFailure
+          volumes:
+          - name: yohai-magen-sse-pvc
+            persistentVolumeClaim:
+              claimName: yohai-magen-sse-pvc
+          - name: aws-secrets
+            secret:
+              secretName: aws-credentials
+          - name: backup-scripts
+            configMap:
+              name: backup-scripts
+              defaultMode: 0755

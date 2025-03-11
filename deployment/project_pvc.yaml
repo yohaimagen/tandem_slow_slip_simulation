@@ -8,5 +8,5 @@ spec:
     -  ReadWriteMany   #ReadWriteOnce
   resources:
     requests:
-      storage: 300Gi
+      storage: 2000Gi
 

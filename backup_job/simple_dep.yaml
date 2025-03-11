@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backup-pod
+  template:
+    metadata:
+      labels:
+        app: backup-pod
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: feature.node.kubernetes.io/pci-10de.present
+                operator: NotIn
+                values:
+                - "true"
+      containers:
+      - name: backup-pod
+        image: yohaimagen1/python-aws:3.12
+        volumeMounts:
+          - mountPath: /home/appuser/storage/
+            name: yohai-magen-sse-pvc
+        resources:
+          limits:
+            memory: 2Gi
+            cpu: "2"
+          requests:
+            memory: 1Gi
+            cpu: "1"
+        command: ["sh", "-c", "echo 'Im a new pod' && sleep infinity"]
+        env:
+        - name: OPENMPI_ALLOW_RUN_AS_ROOT
+          value: "1"
+        - name: OMP_PROC_BIND
+          value: "true"
+        - name: OMP_PLACES
+          value: "cores"
+      volumes:
+      - name: yohai-magen-sse-pvc
+        persistentVolumeClaim:
+          claimName: yohai-magen-sse-pvc
