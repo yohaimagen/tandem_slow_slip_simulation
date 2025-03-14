@@ -5,3 +5,4 @@ __pycache__/
 backup_job/credentials
 backup_job/config
 backup_job/backup_cornJob.yaml
+backup_job/simple_dep.yaml
